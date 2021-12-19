@@ -1,5 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.urls import reverse, resolve
+
+from users.forms import CustomUserCreationForm
+from users.views import SingupPageView
 
 
 class CustomUserTests(TestCase):
@@ -29,3 +33,26 @@ class CustomUserTests(TestCase):
         self.assertTrue(admin_user.is_active)
         self.assertTrue(admin_user.is_staff)
         self.assertTrue(admin_user.is_superuser)
+
+
+class SingupPageTests(TestCase):
+    def setUp(self):
+        url = reverse('singup')
+        self.response = self.client.get(url)
+
+    def test_singup_template(self):
+        self.assertEqual(self.response.status_code, 200)
+        self.assertTemplateUsed(self.response, 'singup.html')
+        self.assertContains(self.response, 'Sing Up')
+        self.assertNotContains(self.response, 'Hi i should not be here')
+
+    def test_singup_form(self):
+        form = self.response.context.get('form')
+        self.assertIsInstance(form, CustomUserCreationForm)
+        self.assertContains(self.response, 'csrfmiddlewaretoken')
+
+    def test_singup_view(self):
+        view = resolve('/accounts/singup/')
+        self.assertEqual(
+            view.func.__name__,SingupPageView.as_view().__name__
+        )
