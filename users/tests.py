@@ -35,24 +35,23 @@ class CustomUserTests(TestCase):
         self.assertTrue(admin_user.is_superuser)
 
 
-class SingupPageTests(TestCase):
+class SignupTests(TestCase): # new
+    username = 'newuser'
+    email = 'newuser@email.com'
     def setUp(self):
-        url = reverse('singup')
+        url = reverse('account_signup')
         self.response = self.client.get(url)
-
-    def test_singup_template(self):
+    def test_signup_template(self):
         self.assertEqual(self.response.status_code, 200)
-        self.assertTemplateUsed(self.response, 'singup.html')
-        self.assertContains(self.response, 'Sing Up')
-        self.assertNotContains(self.response, 'Hi i should not be here')
-
-    def test_singup_form(self):
-        form = self.response.context.get('form')
-        self.assertIsInstance(form, CustomUserCreationForm)
-        self.assertContains(self.response, 'csrfmiddlewaretoken')
-
-    def test_singup_view(self):
-        view = resolve('/accounts/singup/')
-        self.assertEqual(
-            view.func.__name__,SingupPageView.as_view().__name__
-        )
+        self.assertTemplateUsed(self.response, 'account/signup.html')
+        self.assertContains(self.response, 'Sign Up')
+        self.assertNotContains(
+        self.response, 'Hi there! I should not be on the page.')
+    def test_signup_form(self):
+        new_user = get_user_model().objects.create_user(
+        self.username, self.email)
+        self.assertEqual(get_user_model().objects.all().count(), 1)
+        self.assertEqual(get_user_model().objects.all()
+        [0].username, self.username)
+        self.assertEqual(get_user_model().objects.all()
+        [0].email, self.email)
